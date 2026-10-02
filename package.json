@@ -1,0 +1,95 @@
+{
+    "name": "umbot-ydb-adapter",
+    "version": "1.0.0",
+    "description": "YDB (Yandex Database) adapter for the umbot framework: storage for Alice skills and chat bots in Yandex Cloud Functions without a separate database server.",
+    "keywords": [
+        "umbot",
+        "universal-bot",
+        "ydb",
+        "yandex-database",
+        "yandex-cloud",
+        "cloud-functions",
+        "serverless",
+        "alice",
+        "alisa",
+        "database",
+        "db-adapter",
+        "typescript",
+        "bot-framework"
+    ],
+    "author": {
+        "name": "Maxim-M",
+        "email": "maximco36895@yandex.ru",
+        "url": "https://github.com/max36895"
+    },
+    "license": "MIT",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "type": "commonjs",
+    "homepage": "https://github.com/max36895/umbot-ydb-adapter#readme",
+    "bugs": {
+        "url": "https://github.com/max36895/umbot-ydb-adapter/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/max36895/umbot-ydb-adapter.git"
+    },
+    "scripts": {
+        "build": "tsc",
+        "test": "jest",
+        "test:coverage": "jest --coverage",
+        "bt": "npm run build && npm run test",
+        "live": "npm run build && node scripts/live-check.js",
+        "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json",
+        "lint": "eslint .",
+        "lint:fix": "eslint . --fix",
+        "prettier": "prettier --write .",
+        "prettier:check": "prettier --check .",
+        "check": "npm run prettier:check && npm run typecheck && npm run lint",
+        "prepublishOnly": "npm run build",
+        "deploy": "npm run build && npm publish"
+    },
+    "engines": {
+        "node": ">=20.19.0"
+    },
+    "files": [
+        "dist",
+        "README.md",
+        "LICENSE.md"
+    ],
+    "peerDependencies": {
+        "umbot": "^3.1.4"
+    },
+    "dependencies": {
+        "@ydbjs/auth": "^6.3.1",
+        "@ydbjs/core": "^6.3.1",
+        "@ydbjs/query": "^6.3.0",
+        "@ydbjs/value": "^6.0.8"
+    },
+    "devDependencies": {
+        "@eslint/js": "^10.0.1",
+        "@types/jest": "^30.0.0",
+        "@types/node": "^20.19.30",
+        "eslint": "^10.2.0",
+        "eslint-config-prettier": "^10.1.8",
+        "eslint-plugin-security": "^4.0.0",
+        "globals": "^17.4.0",
+        "jest": "^30.3.0",
+        "prettier": "^3.8.1",
+        "ts-jest": "^29.4.9",
+        "typescript": "^5.9.3",
+        "typescript-eslint": "^8.60.0",
+        "umbot": "^3.1.4"
+    },
+    "funding": {
+        "type": "individual",
+        "url": "https://boosty.to/max36895/donate"
+    },
+    "maintainers": [
+        {
+            "name": "max36895",
+            "email": "maximco36895@yandex.ru",
+            "url": "https://github.com/max36895"
+        }
+    ]
+}

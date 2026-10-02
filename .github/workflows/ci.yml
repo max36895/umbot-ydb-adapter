@@ -1,0 +1,31 @@
+name: CI
+
+on:
+    push:
+        branches: ['main']
+    pull_request:
+        branches: ['main']
+
+permissions:
+    contents: read
+
+jobs:
+    test:
+        name: Node ${{ matrix.node }}
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                # 20.19 — минимальная версия из engines: на ней require() ESM-пакетов SDK включён по умолчанию
+                node: ['20.19.0', '22', '24']
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ matrix.node }}
+            - run: npm install
+            - run: npm run check
+            - run: npm run build
+            - run: npm test
+            # Пакет должен загружаться через require() на каждой поддерживаемой версии Node
+            - run: node -e "const { YdbAdapter } = require('./dist'); new YdbAdapter();"
