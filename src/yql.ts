@@ -529,14 +529,14 @@ export function buildSelect(
 }
 
 /**
- * Собирает UPSERT одной записи. Поля со значением undefined пропускаются,
- * null записывается как NULL.
+ * Собирает INSERT одной записи: занятый ключ YDB отклоняет, запись не перезаписывается.
+ * Поля со значением undefined пропускаются, null записывается как NULL.
  * @param tableName Имя таблицы
  * @param data Данные записи
  * @param ctx Контекст запроса
  * @returns Запрос
  */
-export function buildUpsert(tableName: string, data: IQueryData, ctx: IYqlContext): IYqlStatement {
+export function buildInsert(tableName: string, data: IQueryData, ctx: IYqlContext): IYqlStatement {
     const params = new YqlParams();
     const columns: string[] = [];
     const values: string[] = [];
@@ -558,7 +558,7 @@ export function buildUpsert(tableName: string, data: IQueryData, ctx: IYqlContex
     if (!columns.length) {
         throw new YqlBuildError(`Нет данных для записи в таблицу "${tableName}".`);
     }
-    const text = `UPSERT INTO ${quoteTable(tableName)} (${columns.join(', ')}) VALUES (${values.join(', ')})`;
+    const text = `INSERT INTO ${quoteTable(tableName)} (${columns.join(', ')}) VALUES (${values.join(', ')})`;
     return { text, params: params.params };
 }
 
@@ -624,7 +624,7 @@ export function buildDelete(
 
 /**
  * Описание вторичного индекса для CREATE TABLE / ALTER TABLE.
- * Индекс синхронный: запись, только что сохранённая через UPSERT, сразу видна в поиске по индексу.
+ * Индекс синхронный: запись, только что сохранённая через INSERT или UPDATE, сразу видна в поиске по индексу.
  */
 function indexDefinition(index: IYdbIndexInfo): string {
     return `INDEX ${quoteColumn(index.name)} GLOBAL SYNC ON (${index.fields.map(quoteColumn).join(', ')})`;

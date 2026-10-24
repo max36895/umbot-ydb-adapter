@@ -13,7 +13,7 @@ import {
     buildSchemaCheck,
     buildSelect,
     buildUpdate,
-    buildUpsert,
+    buildInsert,
     chooseIndex,
     escapeYqlString,
     normalizeRow,
@@ -282,7 +282,7 @@ describe('типизация значений', () => {
     ];
 
     it('берёт тип из правил модели и обрезает строку по max (как встроенные адаптеры — Text.resize)', () => {
-        const statement = buildUpsert(
+        const statement = buildInsert(
             'Custom',
             { title: 'Длинное название', count: '7', active: 'true', created: 1700000000 },
             { rules },
@@ -296,12 +296,12 @@ describe('типизация значений', () => {
     });
 
     it('Bool: всё, кроме true / 1 / "1" / "true", — false', () => {
-        const statement = buildUpsert('Custom', { active: 'false' }, { rules });
+        const statement = buildInsert('Custom', { active: 'false' }, { rules });
         expect(paramsOf(statement)).toEqual({ $p0: ['Bool', false] });
     });
 
     it('без схемы и правил выводит тип из значения', () => {
-        const statement = buildUpsert(
+        const statement = buildInsert(
             'Custom',
             { s: 'x', i: 3, f: 2.5, b: false, big: 9007199254740993n },
             {},
@@ -316,7 +316,7 @@ describe('типизация значений', () => {
     });
 
     it('объект в колонке Utf8 сохраняется как JSON', () => {
-        const statement = buildUpsert(
+        const statement = buildInsert(
             'UsersData',
             { userId: 'u1', platform: 'vk', data: { step: 2 } },
             { table: users },
@@ -329,12 +329,12 @@ describe('типизация значений', () => {
         [{ count: 1.5 }, 'ожидает целое число'],
         [{ count: '' }, 'ожидает целое число'],
     ])('отклоняет некорректное целое %p', (data, message) => {
-        expect(() => buildUpsert('Custom', data, { rules })).toThrow(message);
+        expect(() => buildInsert('Custom', data, { rules })).toThrow(message);
     });
 
     it('отклоняет нечисловое значение для Double', () => {
         expect(() =>
-            buildUpsert(
+            buildInsert(
                 'Custom',
                 { f: 'x' },
                 {
@@ -350,29 +350,29 @@ describe('типизация значений', () => {
     });
 });
 
-describe('buildUpsert', () => {
+describe('buildInsert', () => {
     it('пропускает undefined и записывает null как NULL', () => {
-        const statement = buildUpsert(
+        const statement = buildInsert(
             'UsersData',
             { userId: 'u1', platform: 'alisa', meta: null, data: undefined },
             { table: users },
         );
         expect(statement.text).toBe(
-            'UPSERT INTO `UsersData` (`userId`, `platform`, `meta`) VALUES ($p0, $p1, NULL)',
+            'INSERT INTO `UsersData` (`userId`, `platform`, `meta`) VALUES ($p0, $p1, NULL)',
         );
     });
 
     it('требует все поля первичного ключа', () => {
         expect(() =>
-            buildUpsert('UsersData', { userId: 'u1', platform: null }, { table: users }),
+            buildInsert('UsersData', { userId: 'u1', platform: null }, { table: users }),
         ).toThrow('первичного ключа "platform"');
-        expect(() => buildUpsert('ImageTokens', { path: 'p' }, { table: images })).toThrow(
+        expect(() => buildInsert('ImageTokens', { path: 'p' }, { table: images })).toThrow(
             'первичного ключа "imageToken"',
         );
     });
 
     it('отклоняет пустые данные', () => {
-        expect(() => buildUpsert('Custom', { a: undefined }, {})).toThrow('Нет данных');
+        expect(() => buildInsert('Custom', { a: undefined }, {})).toThrow('Нет данных');
     });
 });
 

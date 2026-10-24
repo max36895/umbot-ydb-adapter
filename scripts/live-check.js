@@ -66,14 +66,26 @@ async function main() {
         check('ensureSchema (повторно)', await adapter.ensureSchema(DB_TABLES_SCHEMA));
 
         const userKey = { userId: 'live-1', platform: PLATFORM };
+        const token = { imageToken: 'live-token-1', path: '/live/check.png', platform: PLATFORM };
+        // Строки прерванного прошлого прогона: INSERT по занятому ключу вернул бы false.
+        await adapter.remove(q('UsersData', 'userId', { query: userKey }));
+        await adapter.remove(
+            q('ImageTokens', 'imageToken', { query: { imageToken: token.imageToken } }),
+        );
         check(
-            'UPSERT пользователя',
+            'INSERT пользователя',
             await adapter.insert(
                 q('UsersData', 'userId', { data: { ...userKey, meta: null, data: '{"step":1}' } }),
             ),
         );
         let res = await adapter.select(q('UsersData', 'userId'), userKey, true);
         check('SELECT по ключу', res.status && res.data.data === '{"step":1}', res);
+        check(
+            'повторный INSERT с тем же ключом отклонён',
+            !(await adapter.insert(
+                q('UsersData', 'userId', { data: { ...userKey, meta: null, data: '{"step":9}' } }),
+            )),
+        );
 
         check(
             'UPDATE по составному ключу',
@@ -94,9 +106,8 @@ async function main() {
         );
         check('SELECT с $in', res.status && res.data.length === 1, res);
 
-        const token = { imageToken: 'live-token-1', path: '/live/check.png', platform: PLATFORM };
         check(
-            'UPSERT токена',
+            'INSERT токена',
             await adapter.insert(q('ImageTokens', 'imageToken', { data: token })),
         );
         res = await adapter.select(
@@ -124,7 +135,7 @@ async function main() {
         check('после DELETE запись не находится', res.status === false && !res.error, res);
 
         check(
-            'UPSERT в свою таблицу (Int64, Double, Bool)',
+            'INSERT в свою таблицу (Int64, Double, Bool)',
             await adapter.insert(
                 q(CUSTOM_TABLE, 'id', {
                     data: { id: 'o1', userId: 'u1', qty: 3, total: 9.5, paid: true },

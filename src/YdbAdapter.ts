@@ -28,7 +28,7 @@ import {
     buildSchemaCheck,
     buildSelect,
     buildUpdate,
-    buildUpsert,
+    buildInsert,
     escapeYqlString,
     normalizeRow,
     tableInfoFromDefinition,
@@ -441,14 +441,15 @@ export class YdbAdapter extends BaseDbAdapter<IYdbDbInfo> {
     }
 
     /**
-     * Добавляет запись (UPSERT): повторная запись с тем же ключом перезаписывает строку,
-     * поэтому SDK может безопасно повторить запрос после временной ошибки сети.
+     * Добавляет запись (INSERT). Занятый ключ YDB отклоняет — вернётся false, запись не
+     * перезаписывается (как у SQL-адаптеров). SDK повторяет запрос после временной ошибки сети;
+     * если первая попытка всё же записала строку, повтор получит «ключ занят» и вернёт false.
      * @param insertData Запрос с данными в `data`
-     * @returns true при успехе
+     * @returns true при успехе, false — ключ занят или ошибка базы (в логе)
      */
     public async _insert(insertData: IQuery): Promise<boolean> {
         try {
-            const statement = buildUpsert(
+            const statement = buildInsert(
                 insertData.tableName,
                 insertData.data ?? {},
                 this.#context(insertData),

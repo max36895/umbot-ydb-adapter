@@ -410,14 +410,14 @@ describe('_select', () => {
 });
 
 describe('_insert / _update / _remove', () => {
-    it('_insert делает UPSERT', async () => {
+    it('_insert делает INSERT', async () => {
         await connected();
         const ok = await adapter.insert(
             query('ImageTokens', { data: { imageToken: 't1', path: '/a.png', platform: 'alisa' } }),
         );
         expect(ok).toBe(true);
         expect(mockState.executed[0]).toMatchObject({
-            text: 'UPSERT INTO `ImageTokens` (`imageToken`, `path`, `platform`) VALUES ($p0, $p1, $p2)',
+            text: 'INSERT INTO `ImageTokens` (`imageToken`, `path`, `platform`) VALUES ($p0, $p1, $p2)',
             isolation: 'serializableReadWrite',
             idempotent: true,
         });
@@ -754,11 +754,11 @@ describe('работа с моделью UsersData', () => {
         model.platform = 'telegram';
         model.data = { step: 1 };
         expect(await model.save(true)).toBe(true);
-        const upsert = mockState.executed[0];
-        expect(upsert?.text).toBe(
-            'UPSERT INTO `UsersData` (`meta`, `data`, `platform`, `userId`) VALUES (NULL, $p0, $p1, $p2)',
+        const insert = mockState.executed[0];
+        expect(insert?.text).toBe(
+            'INSERT INTO `UsersData` (`meta`, `data`, `platform`, `userId`) VALUES (NULL, $p0, $p1, $p2)',
         );
-        expect(upsert?.params.$p2).toEqual({ kind: 'Utf8', value: '12345' });
+        expect(insert?.params.$p2).toEqual({ kind: 'Utf8', value: '12345' });
 
         mockState.handler = () => [
             [{ userId: '12345', platform: 'telegram', meta: null, data: '{"step":1}' }],
