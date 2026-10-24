@@ -1,6 +1,6 @@
 {
     "name": "umbot-ydb-adapter",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "YDB (Yandex Database) adapter for the umbot framework: storage for Alice skills and chat bots in Yandex Cloud Functions without a separate database server.",
     "keywords": [
         "umbot",
@@ -79,7 +79,7 @@
         "ts-jest": "^29.4.9",
         "typescript": "^5.9.3",
         "typescript-eslint": "^8.60.0",
-        "umbot": "^3.1.4"
+        "umbot": "^3.1.6"
     },
     "funding": {
         "type": "individual",

@@ -611,6 +611,29 @@ describe('ensureSchema', () => {
             });
         });
 
+        it('таблица и в tables, и в dbTables umbot: создаётся по tables, с типами колонок', async () => {
+            await connected({ tables });
+            mockState.handler = (text) => {
+                if (text.includes('LIMIT 0;')) {
+                    throw new Error('not found');
+                }
+                return [];
+            };
+            const fromDbTables = {
+                tableName: 'Orders',
+                primaryKeyName: 'orderId',
+                uniqueKeys: [],
+                fields: { orderId: { type: 'string' }, userId: { type: 'string' } },
+                indexes: [['userId']],
+            } as const;
+            expect(await adapter.ensureSchema([...DB_TABLES_SCHEMA, fromDbTables])).toBe(true);
+            const creates = mockState.executed
+                .map((entry) => entry.text)
+                .filter((text) => text.startsWith('CREATE TABLE IF NOT EXISTS `Orders`'));
+            expect(creates).toHaveLength(1);
+            expect(creates[0]).toContain('`qty` Int64');
+        });
+
         it('некорректное описание: connect и ensureSchema возвращают false', async () => {
             const broken: IYdbTableDefinition[] = [
                 { tableName: 'Orders', primaryKey: ['id'], columns: { x: 'Utf8' } },

@@ -285,13 +285,19 @@ export class YdbAdapter extends BaseDbAdapter<IYdbDbInfo> {
      * Сначала выполняется один запрос-проверка (`SELECT ... LIMIT 0` по всем таблицам и индексам).
      * Если схема уже готова — на этом всё: в Cloud Functions метод вызывается на каждом холодном
      * старте, и DDL на каждый старт стоил бы заметного времени.
-     * @param tables Описание таблиц (`DB_TABLES_SCHEMA`)
+     * @param tables Описание таблиц от umbot: `DB_TABLES_SCHEMA` и `appConfig.dbTables`
      * @returns true, если схема готова
      */
     async ensureSchema(tables: readonly IDbTableSchema[]): Promise<boolean> {
         let infos: IYdbTableInfo[];
         try {
-            infos = [...tables.map(tableInfoFromSchema), ...this.#customTables()];
+            // Одноимённая таблица из опции tables (с типами колонок) заменяет описание от umbot
+            // (appConfig.dbTables, все колонки Utf8) — иначе таблица создалась бы с колонками Utf8.
+            const byName = new Map<string, IYdbTableInfo>();
+            for (const info of [...tables.map(tableInfoFromSchema), ...this.#customTables()]) {
+                byName.set(info.tableName, info);
+            }
+            infos = [...byName.values()];
         } catch (error) {
             this._saveLog('ensureSchema: некорректное описание таблицы', error);
             return false;
