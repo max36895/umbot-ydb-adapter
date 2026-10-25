@@ -15,7 +15,8 @@
         "database",
         "db-adapter",
         "typescript",
-        "bot-framework"
+        "bot-framework",
+        "smartapp"
     ],
     "author": {
         "name": "Maxim-M",
